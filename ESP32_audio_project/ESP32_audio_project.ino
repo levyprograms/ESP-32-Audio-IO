@@ -32,8 +32,8 @@
 #define I2S_RX_DIN    13
 
 // Pinos da Chave Seletora de 3 Posições
-#define SWITCH_PIN_A  4
-#define SWITCH_PIN_B  5
+#define SWITCH_PIN_A  34
+#define SWITCH_PIN_B  35
 
 #define SAMPLE_RATE   44100
 #define BUFFER_SAMPLES 128
