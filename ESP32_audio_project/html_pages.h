@@ -51,7 +51,7 @@ const char* html_setup = R"rawliteral(
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
       border: 1px solid var(--border-color); text-align: center;
     }
-    .logo-container { margin-bottom: 25px; }
+    .logo-container { margin-bottom: 25px; background: rgba(0, 0, 0, 0)}
     .logo-container img { max-width: 220px; height: auto; }
     .header { margin-bottom: 30px; }
     .header p { color: var(--text-muted); font-size: 15px; letter-spacing: 1px; text-transform: uppercase;}
@@ -83,7 +83,7 @@ const char* html_setup = R"rawliteral(
   <div class="card">
     <div class="logo-container">
       <!-- COLE O BASE64 DA IMAGEM AQUI -->
-      <img src="COLE_O_TEXTO_BASE64_AQUI" alt="Harpyja.Tech">
+      <img src="https://raw.githubusercontent.com/HarpyjaTech/ESP-32-Audio-IO/BT_version/ESP32_audio_project/logo.png" alt="Harpyja.Tech">
     </div>
     <div class="header">
       <p>Configuração de Rede</p>
@@ -137,10 +137,10 @@ const char* html_dashboard = R"rawliteral(
       padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
       text-align: center; border: 1px solid #333;
     }
-    .logo-container { margin-bottom: 20px; }
+    .logo-container { margin-bottom: 20px; background: rgba(0, 0, 0, 0)}
     .logo-container img { max-width: 220px; height: auto; display: inline-block; }
     .status-badge {
-      display: inline-block; background: rgba(195, 139, 56, 0.15); color: var(--primary);
+      display: inline-block; background: rgba(0, 0, 0, 0); color: var(--primary);
       padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: bold;
       letter-spacing: 1px; margin-bottom: 25px; border: 1px solid rgba(195, 139, 56, 0.4);
     }
@@ -170,7 +170,7 @@ const char* html_dashboard = R"rawliteral(
   <div class="card">
     <div class="logo-container">
       <!-- COLE O BASE64 DA IMAGEM AQUI -->
-      <img src="COLE_O_TEXTO_BASE64_AQUI" alt="Harpyja.Tech Logo">
+      <img src="https://raw.githubusercontent.com/HarpyjaTech/ESP-32-Audio-IO/BT_version/ESP32_audio_project/logo.png" alt="Harpyja.Tech">
     </div>
 
     <div class="status-badge">MODO %MODO%</div>
