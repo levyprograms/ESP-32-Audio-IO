@@ -14,49 +14,198 @@ extern int vu_out;
 extern WebServer webServer;
 extern Preferences preferences;
 
+
 // ============================================================
 // PÁGINAS WEB (HTML)
 // ============================================================
+
 const char* html_setup = R"rawliteral(
-<!DOCTYPE html><html><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Configuração de Áudio</title>
-<style>
-  body{font-family:Arial;padding:20px;background:#222;color:#fff;}
-  select,input{width:100%;padding:10px;margin:5px 0 15px;border-radius:5px;border:none;}
-  button{background:#007BFF;color:#fff;padding:15px;border:none;width:100%;
-         font-size:16px;border-radius:5px;cursor:pointer;}
-</style></head>
-<body><h2>Configurar Servidor de Áudio</h2>
-<form action="/save" method="POST">
-  <label>Selecione o Wi-Fi Local:</label>
-  <select name="ssid" required>
-    <option value="">Escaneando redes...</option>
-    %OPTIONS%
-  </select>
-  <label>Senha do Wi-Fi:</label>
-  <input type="password" name="pass" placeholder="Deixe em branco se for rede aberta">
-  <button type="submit">Salvar e Iniciar Servidor</button>
-</form></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Harpyja.Tech - Setup</title>
+  <style>
+    :root {
+      --bg-color: #000000;
+      --card-bg: #121212;
+      --primary: #c38b38;
+      --primary-hover: #a3722b;
+      --text-main: #ffffff;
+      --text-muted: #888888;
+      --input-bg: #1e1e1e;
+      --border-color: #333333;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; padding: 20px;
+    }
+    .card {
+      background: var(--card-bg); width: 100%; max-width: 400px;
+      padding: 40px 30px; border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+      border: 1px solid var(--border-color); text-align: center;
+    }
+    .logo-container { margin-bottom: 25px; }
+    .logo-container img { max-width: 220px; height: auto; }
+    .header { margin-bottom: 30px; }
+    .header p { color: var(--text-muted); font-size: 15px; letter-spacing: 1px; text-transform: uppercase;}
+    .input-group { margin-bottom: 20px; text-align: left; }
+    label {
+      display: block; font-size: 12px; font-weight: 600; color: var(--text-muted);
+      margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    select, input {
+      width: 100%; padding: 14px; background: var(--input-bg); color: var(--text-main);
+      border: 1px solid var(--border-color); border-radius: 8px; font-size: 16px;
+      transition: all 0.3s ease; appearance: none; -webkit-appearance: none;
+    }
+    select {
+      background-image: url("data:image/svg+xml;charset=US-ASCII");
+      background-repeat: no-repeat; background-position: right 14px top 50%; background-size: 12px auto;
+    }
+    select:focus, input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(195, 139, 56, 0.3); }
+    button {
+      width: 100%; padding: 14px; margin-top: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(195, 139, 56, 0.4); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo-container">
+      <!-- COLE O BASE64 DA IMAGEM AQUI -->
+      <img src="COLE_O_TEXTO_BASE64_AQUI" alt="Harpyja.Tech">
+    </div>
+    <div class="header">
+      <p>Configuração de Rede</p>
+    </div>
+    <form action="/save" method="POST">
+      <div class="input-group">
+        <label>Wi-Fi Local</label>
+        <select name="ssid" required>
+          <option value="" disabled selected>Escaneando redes...</option>
+          %OPTIONS%
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Senha do Wi-Fi</label>
+        <input type="password" name="pass" placeholder="Deixe em branco se for rede aberta">
+      </div>
+      <button type="submit">Salvar e Iniciar Servidor</button>
+    </form>
+  </div>
+</body>
+</html>
 )rawliteral";
 
 const char* html_dashboard = R"rawliteral(
-<!DOCTYPE html><html><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dashboard</title><meta http-equiv="refresh" content="3">
-<style>
-  body{font-family:Arial;text-align:center;background:#111;color:#0f0;}
-  .box{border:1px solid #0f0;padding:20px;margin:10px;border-radius:10px;}
-</style></head>
-<body><h2>Status - MODO %MODO%</h2>
-<div class="box"><h3>IP Servidor: %IP% (Porta 7000)</h3></div>
-<div class="box"><h3>Apps Conectados: %CLIENTS% / 4</h3></div>
-<div class="box"><h3>Data/Hora: %TIME%</h3></div>
-<div class="box"><h3>Line-In (Mesa): %VU_IN% %</h3></div>
-<div class="box"><h3>Line-Out (Saida): %VU_OUT% %</h3></div>
-<a href="/reset" style="color:red;">Resetar Wi-Fi</a>
-</body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Harpyja.Tech - Dashboard</title>
+  <meta http-equiv="refresh" content="3">
+  <style>
+    :root {
+      --bg-color: #000000;
+      --card-bg: #121212;
+      --primary: #c38b38;
+      --danger: #dc3545;
+      --text-main: #ffffff;
+      --text-muted: #888888;
+      --box-bg: #1e1e1e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color); color: var(--text-main);
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; padding: 20px;
+    }
+    .card {
+      background: var(--card-bg); width: 100%; max-width: 450px;
+      padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+      text-align: center; border: 1px solid #333;
+    }
+    .logo-container { margin-bottom: 20px; }
+    .logo-container img { max-width: 220px; height: auto; display: inline-block; }
+    .status-badge {
+      display: inline-block; background: rgba(195, 139, 56, 0.15); color: var(--primary);
+      padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: bold;
+      letter-spacing: 1px; margin-bottom: 25px; border: 1px solid rgba(195, 139, 56, 0.4);
+    }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px; }
+    .box {
+      background: var(--box-bg); padding: 15px; border-radius: 8px; text-align: left;
+      border-left: 4px solid var(--primary);
+    }
+    .box-title { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+    .box-value { font-size: 16px; font-weight: bold; }
+    
+    /* VU METERS */
+    .vu-container { background: var(--box-bg); padding: 15px; border-radius: 8px; margin-bottom: 12px; text-align: left; }
+    .vu-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: bold; margin-bottom: 8px; }
+    .vu-bar-bg { width: 100%; height: 12px; background: #000; border-radius: 6px; overflow: hidden; }
+    .vu-bar-fill { height: 100%; background: linear-gradient(90deg, #28a745 0%, #ffc107 75%, #dc3545 100%); transition: width 0.3s ease; }
+    
+    .btn-reset {
+      display: block; width: 100%; padding: 14px; margin-top: 20px; background: transparent;
+      color: var(--danger); font-size: 15px; font-weight: bold; text-decoration: none;
+      border: 1px solid var(--danger); border-radius: 8px; transition: all 0.3s ease;
+    }
+    .btn-reset:hover { background: var(--danger); color: #fff; box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo-container">
+      <!-- COLE O BASE64 DA IMAGEM AQUI -->
+      <img src="COLE_O_TEXTO_BASE64_AQUI" alt="Harpyja.Tech Logo">
+    </div>
+
+    <div class="status-badge">MODO %MODO%</div>
+    
+    <div class="grid">
+      <div class="box">
+        <div class="box-title">IP Servidor (Porta 7000)</div>
+        <div class="box-value">%IP%</div>
+      </div>
+      <div class="box">
+        <div class="box-title">Apps Conectados</div>
+        <div class="box-value">%CLIENTS% / 4</div>
+      </div>
+      <div class="box">
+        <div class="box-title">Data / Hora</div>
+        <div class="box-value">%TIME%</div>
+      </div>
+    </div>
+
+    <div class="vu-container">
+      <div class="vu-header"><span>Line-In (Mesa)</span><span>%VU_IN%%</span></div>
+      <div class="vu-bar-bg"><div class="vu-bar-fill" style="width: %VU_IN%%;"></div></div>
+    </div>
+
+    <div class="vu-container">
+      <div class="vu-header"><span>Line-Out (Saída)</span><span>%VU_OUT%%</span></div>
+      <div class="vu-bar-bg"><div class="vu-bar-fill" style="width: %VU_OUT%%;"></div></div>
+    </div>
+
+    <a href="/reset" class="btn-reset">Resetar Wi-Fi</a>
+  </div>
+</body>
+</html>
 )rawliteral";
+
 
 // ============================================================
 // FUNÇÕES DO SERVIDOR WEB
