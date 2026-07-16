@@ -26,6 +26,7 @@ const char* html_setup = R"rawliteral(
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Harpyja.Tech - Setup</title>
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/HarpyjaTech/ESP-32-Audio-IO/BT_version/ESP32_audio_project/logo.png">
   <style>
     :root {
       --bg-color: #000000;
@@ -114,6 +115,7 @@ const char* html_dashboard = R"rawliteral(
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Harpyja.Tech - Dashboard</title>
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/HarpyjaTech/ESP-32-Audio-IO/BT_version/ESP32_audio_project/logo.png">
   <meta http-equiv="refresh" content="3">
   <style>
     :root {

@@ -6,6 +6,10 @@
  * Antes de compilar: em Ferramentas > Partition Scheme, escolha um esquema
  * com mais espaço de app (ex.: "Huge APP" ou "Minimal SPIFFS"). Wi-Fi +
  * WebServer + Bluetooth Clássico juntos costumam estourar o esquema padrão.
+ * 
+ * Author: Sergio Levy (Harpyja.Tech, Universidade Federal do Ceará - UFC)
+ * License: MIT License (https://opensource.org/licenses/MIT)
+ * Date: 16/07/2026
  */
 
 #include <WiFi.h>
@@ -187,11 +191,23 @@ void changeMode(OperationMode newMode) {
   vu_in = 0; vu_out = 0; connected_apps = 0;
 
   if (currentMode == MODE_BLUETOOTH) {
-    WiFi.mode(WIFI_OFF); webServer.stop();
-    i2s_pin_config_t pin_conf = { I2S_TX_BCK, I2S_TX_WS, I2S_TX_DOUT, I2S_PIN_NO_CHANGE };
-    a2dp_sink.set_pin_config(pin_conf);
+    WiFi.mode(WIFI_OFF); 
+    webServer.stop();
+    
+    // 1. Configura o leitor de VU Meter e inicia o Bluetooth 
+    // (A biblioteca instalará o driver I2S internamente)
     a2dp_sink.set_stream_reader(bt_data_callback);
     a2dp_sink.start("Audio_Server_ESP32");
+
+    // 2. Redireciona os pinos nativamente direto no chip ESP32 (Funciona em qualquer versão)
+    i2s_pin_config_t pin_conf;
+    pin_conf.bck_io_num = I2S_TX_BCK;
+    pin_conf.ws_io_num = I2S_TX_WS;
+    pin_conf.data_out_num = I2S_TX_DOUT;
+    pin_conf.data_in_num = I2S_PIN_NO_CHANGE;
+    
+    i2s_set_pin(I2S_NUM_0, &pin_conf);
+    
   } else {
     if (WiFi.status() != WL_CONNECTED) {
       WiFi.mode(WIFI_STA); WiFi.begin(ssid.c_str(), password.c_str());
@@ -275,9 +291,19 @@ void setup() {
     int tries = 0; while (WiFi.status() != WL_CONNECTED && tries < 20) { delay(500); tries++; }
 
     if (WiFi.status() != WL_CONNECTED) {
-      isSetupMode = true; WiFi.mode(WIFI_AP_STA); WiFi.softAP("AudioServer_Setup");
-      display.clearDisplay(); display.setCursor(0, 0); display.println("Falha Wi-Fi. Config...");
-      display.setCursor(0, 16); display.println("IP: 192.168.4.1"); display.display();
+      isSetupMode = true; display.clearDisplay(); display.setCursor(0, 0); display.println("Falha Wi-Fi. Config...");
+      display.setCursor(0, 16); display.println("Limpando dados...."); display.display();
+      preferences.begin("audio_cfg", false);
+      if (preferences.clear()) {
+        display.setCursor(0, 32); display.println("Feito!"); display.display();
+      } else {
+        display.setCursor(0, 32); display.println("Erro!"); display.display();
+      }
+      preferences.end();
+      display.setCursor(0, 64); display.println("Reniciando em 3 segundos..."); display.display();
+      delay(3000);
+      ESP.restart();
+
     } else {
       configTime(-10800, 0, "pool.ntp.br");
       
@@ -312,7 +338,7 @@ void loop() {
 
     size_t bytes_read, bytes_written;
 
-    if (currentMode == MODE_SERVER) {
+if (currentMode == MODE_SERVER) {
       if (audioServer.hasClient()) {
         for (int i = 0; i < MAX_CLIENTS; i++) {
           if (!audioClients[i] || !audioClients[i].connected()) {
@@ -325,23 +351,36 @@ void loop() {
       connected_apps = 0;
       for (int i = 0; i < MAX_CLIENTS; i++) if (audioClients[i] && audioClients[i].connected()) connected_apps++;
 
+      // === LÊ DA MESA E CALCULA VU_IN (PICO) ===
       i2s_read(I2S_NUM_1, buffer_in, sizeof(buffer_in), &bytes_read, portMAX_DELAY);
-      vu_in = map(abs(buffer_in[0]), 0, 32767, 0, 100);
+      int peak_in = 0;
+      for(int i = 0; i < bytes_read / 2; i++) {
+        if(abs(buffer_in[i]) > peak_in) peak_in = abs(buffer_in[i]);
+      }
+      vu_in = map(peak_in, 0, 32767, 0, 100);
+
+      // Envia para o PC/App
       for (int i = 0; i < MAX_CLIENTS; i++) {
         if (audioClients[i] && audioClients[i].connected()) audioClients[i].write((uint8_t*)buffer_in, bytes_read);
       }
 
+      // === RECEBE DO PC/APP E CALCULA VU_OUT (PICO) ===
       bool receivedAudio = false;
       for (int i = 0; i < MAX_CLIENTS; i++) {
         if (audioClients[i] && audioClients[i].connected() && audioClients[i].available() >= sizeof(buffer_out)) {
           int bytes = audioClients[i].read((uint8_t*)buffer_out, sizeof(buffer_out));
           i2s_write(I2S_NUM_0, buffer_out, bytes, &bytes_written, 0);
-          vu_out = map(abs(buffer_out[0]), 0, 32767, 0, 100);
+          
+          int peak_out = 0;
+          for(int j = 0; j < bytes / 2; j++) {
+            if(abs(buffer_out[j]) > peak_out) peak_out = abs(buffer_out[j]);
+          }
+          vu_out = map(peak_out, 0, 32767, 0, 100);
+          
           receivedAudio = true; break;
         }
       }
       if (!receivedAudio) vu_out = 0;
-
     } else if (currentMode == MODE_AUXILIAR) {
       i2s_read(I2S_NUM_1, buffer_in, sizeof(buffer_in), &bytes_read, portMAX_DELAY);
       vu_in = map(abs(buffer_in[0]), 0, 32767, 0, 100);
