@@ -2,6 +2,8 @@
 #define AUDIOI2SFORESP32_H
 
 #include <driver/i2s.h>
+#include <soc/io_mux_reg.h> // <-- ADICIONADO: Necessário para rotear o MCLK
+
 #define VERSAO_LIB 1.0
 
 // ============================================================
@@ -57,6 +59,14 @@ void initI2S_RX() {
     .data_in_num  = I2S_RX_DIN
   };
   i2s_set_pin(I2S_NUM_1, &pins);
+
+  // ==============================================================
+  // HACK HARDWARE: Roteia o Master Clock (MCLK) do I2S1 para o pino RX0 (GPIO 3)
+  // Obrigatório para o PCM1808 gerar amostras de áudio.
+  // ==============================================================
+  PIN_FUNC_SELECT(PERIPHS_IO_MUX_U0RXD_U, FUNC_U0RXD_CLK_OUT2);
+  REG_WRITE(PIN_CTRL, (REG_READ(PIN_CTRL) & 0xFFFFFF0F) | (0x10)); 
+  // ==============================================================
 }
 
 #endif // AUDIOI2SFORESP32_H
