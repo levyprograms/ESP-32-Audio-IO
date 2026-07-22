@@ -1,5 +1,7 @@
 # 🎧 Hub de Áudio Multiprotocolo (Harpyja.Tech)
 
+<a href="https://buymeacoffee.com/hapyjatech" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 Este projeto transforma um **ESP32** num servidor de áudio bidirecional de alta fidelidade (44.1kHz/16-bit). Ele elimina as limitações dos sistemas analógicos tradicionais, permitindo rotear áudio entre mesas de som, computadores e dispositivos mobile de forma digital e profissional.
 
 O sistema opera com uma **Máquina de Estados**, permitindo alternar fisicamente entre três modos de operação distintos.
